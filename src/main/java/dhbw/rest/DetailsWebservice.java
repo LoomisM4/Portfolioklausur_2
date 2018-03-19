@@ -1,13 +1,10 @@
 package dhbw.rest;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dhbw.pojo.detail.album.DetailsAlbum;
 import dhbw.pojo.detail.artist.DetailsArtist;
 import dhbw.pojo.detail.track.DetailsTrack;
 import dhbw.pojo.result.detail.DetailResult;
-import dhbw.pojo.search.album.SearchAlbum;
-import dhbw.pojo.search.artist.SearchArtist;
-import dhbw.pojo.search.track.SearchTrack;
 import dhbw.spotify.RequestCategory;
 import dhbw.spotify.RequestType;
 import dhbw.spotify.SpotifyRequest;
@@ -17,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -26,29 +24,29 @@ import java.util.concurrent.atomic.AtomicReference;
 @RestController
 public class DetailsWebservice {
     @RequestMapping("/details/{id}")
-    public String details(@PathVariable String id, @RequestParam("type") String type) {
-        Gson gson = new Gson();
+    public String details(@PathVariable String id, @RequestParam("type") String type) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
 
         DetailResult dr = new DetailResult();
 
         if (type.equals("TRACK")) {
             String result = this.runRequest(RequestCategory.TRACK, id);
-            DetailsTrack searchTrack = gson.fromJson(result, DetailsTrack.class);
+            DetailsTrack searchTrack = mapper.readValue(result, DetailsTrack.class);
             dr.setTitle(searchTrack.getName());
             dr.setInfo(searchTrack.getType());
         } else if (type.equals("ARTIST")) {
             String result = this.runRequest(RequestCategory.ARTIST, id);
-            DetailsArtist searchArtist = gson.fromJson(result, DetailsArtist.class);
+            DetailsArtist searchArtist = mapper.readValue(result, DetailsArtist.class);
             dr.setTitle(searchArtist.getName());
             dr.setInfo(searchArtist.getType());
         } else if (type.equals("ALBUM")) {
             String result = this.runRequest(RequestCategory.ALBUM, id);
-            DetailsAlbum searchAlbum = gson.fromJson(result, DetailsAlbum.class);
+            DetailsAlbum searchAlbum = mapper.readValue(result, DetailsAlbum.class);
             dr.setTitle(searchAlbum.getName());
             dr.setInfo(searchAlbum.getType());
         }
 
-        return gson.toJson(dr);
+        return mapper.writeValueAsString(dr);
     }
 
     private String runRequest(RequestCategory category, String search) {
