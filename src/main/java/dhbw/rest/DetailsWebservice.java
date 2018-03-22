@@ -23,8 +23,8 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 @RestController
 public class DetailsWebservice {
-    @RequestMapping("/details/{id}")
-    public String details(@PathVariable String id, @RequestParam("type") String type) throws IOException {
+    @RequestMapping("/detail/{id}")
+    public String details(@PathVariable("id") String id, @RequestParam("type") String type) throws IOException, WrongRequestTypeException {
         ObjectMapper mapper = new ObjectMapper();
 
         DetailResult dr = new DetailResult();
@@ -49,14 +49,9 @@ public class DetailsWebservice {
         return mapper.writeValueAsString(dr);
     }
 
-    private String runRequest(RequestCategory category, String search) {
+    private String runRequest(RequestCategory category, String search) throws WrongRequestTypeException {
         SpotifyRequest request = new SpotifyRequest(RequestType.DETAIL);
-        Optional<String> resultOpt = null;
-        try {
-            resultOpt = request.performeRequestDetail(category, search);
-        } catch (WrongRequestTypeException e) {
-            e.printStackTrace();
-        }
+        Optional<String> resultOpt = request.performeRequestDetail(category, search);
 
         AtomicReference<String> result = new AtomicReference<>(new String());
         resultOpt.ifPresent(result::set);
